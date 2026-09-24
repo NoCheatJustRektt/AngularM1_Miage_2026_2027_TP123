@@ -11,6 +11,20 @@ import { AuthService } from '../../shared/services/auth.service';
 export class AppComponent {
   readonly auth = inject(AuthService);
   private readonly router = inject(Router); 
+
+  constructor() {
+    if (this.auth.token()) {
+      this.auth.profile().subscribe({
+        next: (profile) => {
+          console.log('Profile loaded:', profile);
+        },
+        error: (err) => {
+          console.error('Failed to load profile:', err);
+        }
+      });
+    }
+  }
+
   logout(): void {
     this.auth.logout();
     void this.router.navigateByUrl('/login');

@@ -1,1 +1,7 @@
 :host { display: block; }
+
+.main-nav, .header-content {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}

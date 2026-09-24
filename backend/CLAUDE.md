@@ -14,3 +14,9 @@ méthode, son URL, son authentification, ses paramètres, son corps, ses répons
 et ses erreurs. Ne mets jamais de secret dans le code et présente un diff
 limité. Toute erreur doit être visible dans les logs et dans la réponse HTTP
 appropriée.
+
+POUR CHACUN DES PROMPTS QUE JE REALISE :
+ECRIT DANS LE FICHIER `RAPPORT_IA_MODELE.md` EN PRECISANT :
+LA DATE ET L'HEURE DU PROMPT
+LE PROMPT QUI A ETE DONNE
+LE RESULTAT DU PROMPT DETAILLE

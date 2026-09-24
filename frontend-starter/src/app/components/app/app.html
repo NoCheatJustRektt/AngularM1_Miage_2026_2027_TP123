@@ -1,9 +1,14 @@
-<header>
-  <div>
+<header class="main-header">
+  <div class="header-content">
     <b>Guitar Practice Cloud</b>
     <small>Le cloud qui manque à votre ampli</small>
   </div>
-  <nav aria-label="Navigation principale">
+  @if (auth.token()) {
+    <div class="user">
+      <span>Bonjour {{ auth.currentUser()?.name }}. Ravis de te voir parmi nous !</span>
+    </div>
+  }
+  <nav aria-label="Navigation principale" class="main-nav">
     <a routerLink="/tracks">Backing tracks</a>
     <a routerLink="/profile">Profil</a>
     @if (auth.token()) {
