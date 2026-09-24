@@ -1,11 +1,33 @@
 <section class="card">
   <h1>Créer un compte</h1>
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <label>Nom<input formControlName="name" /></label>
-    <label>Email<input type="email" formControlName="email" /></label>
-    <label>Mot de passe<input type="password" formControlName="password" /></label>
-    <button type="submit">Créer mon compte</button>
+    <label>
+      Nom
+      <input formControlName="name" />
+      @if (getErrorMessage('name'); as msg) {
+        <small class="field-error">{{ msg }}</small>
+      }
+    </label>
+
+    <label>
+      Email
+      <input type="email" formControlName="email" />
+      @if (getErrorMessage('email'); as msg) {
+        <small class="field-error">{{ msg }}</small>
+      }
+    </label>
+
+    <label>
+      Mot de passe
+      <input type="password" formControlName="password" />
+      @if (getErrorMessage('password'); as msg) {
+        <small class="field-error">{{ msg }}</small>
+      }
+    </label>
+
+    <button type="submit" [disabled]="form.invalid">Créer mon compte</button>
   </form>
+
   @if (error()) {
     <p class="error">{{ error() }}</p>
   }

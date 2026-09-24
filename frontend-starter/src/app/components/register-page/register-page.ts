@@ -13,14 +13,39 @@ export class RegisterPageComponent {
   private readonly router = inject(Router);
 
   readonly error = signal('');
-  
+
   readonly form = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
-    password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(8)],
+    }),
   });
 
+  getErrorMessage(controlName: 'name' | 'email' | 'password'): string | null {
+    const control = this.form.get(controlName);
+    if (!control || !control.invalid || !(control.touched || control.dirty)) {
+      return null;
+    }
+    if (control.hasError('required')) {
+      return 'Ce champ est obligatoire.';
+    }
+    if (control.hasError('email')) {
+      return 'Format d’adresse email invalide.';
+    }
+    if (control.hasError('minlength')) {
+      return 'Le mot de passe doit comporter au moins 8 caractères.';
+    }
+    return 'Valeur invalide.';
+  }
+
   submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
     const values = this.form.getRawValue();
     this.auth.register(values.name, values.email, values.password).subscribe({
       next: () => {

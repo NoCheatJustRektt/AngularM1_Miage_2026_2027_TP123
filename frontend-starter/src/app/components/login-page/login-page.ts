@@ -24,7 +24,26 @@ export class LoginPageComponent {
     }),
   });
 
+  getErrorMessage(controlName: 'email' | 'password'): string | null {
+    const control = this.form.get(controlName);
+    if (!control || !control.invalid || !(control.touched || control.dirty)) {
+      return null;
+    }
+    if (control.hasError('required')) {
+      return 'Ce champ est obligatoire.';
+    }
+    if (control.hasError('email')) {
+      return 'Format d’adresse email invalide.';
+    }
+    return 'Valeur invalide.';
+  }
+
   submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
     const values = this.form.getRawValue();
     this.auth.login(values.email, values.password).subscribe({
       next: () => {

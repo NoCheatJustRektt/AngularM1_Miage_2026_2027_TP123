@@ -1,4 +1,5 @@
-:host { display: block; }
+/*:host { display: block; }*/
+
 
 .main-nav, .header-content {
   display: flex;
