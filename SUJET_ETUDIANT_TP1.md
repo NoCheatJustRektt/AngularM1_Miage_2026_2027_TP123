@@ -50,11 +50,11 @@ Angular ne dialogue jamais directement avec MongoDB. Les routes et les formats a
 
 Sans modifier le code au début, retrouver :
 
-- le composant racine ;
-- la configuration des routes ;
-- l’enregistrement de `HttpClient` ;
-- les modèles, services et pages ;
-- le mécanisme qui ajoute le JWT aux requêtes protégées.
+- le composant racine ; src/index.html || src/components/app/app
+- la configuration des routes ; src/app/routes.ts
+- l’enregistrement de `HttpClient` ; src/main.ts
+- les modèles, services et pages ; src/app/components
+- le mécanisme qui ajoute le JWT aux requêtes protégées. backend/src/app.js
 
 Produire un schéma annoté du flux lors d’un clic sur « Se connecter ». Ouvrir `API_CONTRACT.md` et distinguer les routes publiques des routes protégées.
 
