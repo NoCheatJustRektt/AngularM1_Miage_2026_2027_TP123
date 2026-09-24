@@ -20,7 +20,11 @@
                         "styles": [
                             "src/styles.css"
                         ]
-                    }
+                    },
+                    "configurations": {
+                        "development": {}
+                    },
+                    "defaultConfiguration": "development"
                 },
                 "serve": {
                     "builder": "@angular/build:dev-server",

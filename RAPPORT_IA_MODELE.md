@@ -31,33 +31,18 @@ Pour chaque mission, détailler et fournir des explications concernant : objecti
 **Prompt :** « Comment et où faire l'appel de auth.profile() pour que les données de l'utilisateur soient chargées en permanence ? »
 **Résultat :** Recommandation d'appeler `auth.profile()` dans le constructeur de `AppComponent`, conditionné par `if (this.auth.token())`, afin de restaurer `currentUser` après un rechargement de page sans dupliquer l'appel après un login classique (déjà couvert par `storeAuthentication`). Explication du lien avec la gestion du 401 côté intercepteur (un token périmé stocké déclenche automatiquement une déconnexion propre). Aucun fichier modifié par l'agent à cette étape ; proposé pour implémentation par le binôme.
 
-**Vérifications à réaliser par le binôme avant rendu :** relire chaque extrait de code proposé, l'appliquer soi-même, tester dans le navigateur (connexion, F5, expiration/altération du token, déconnexion) et capturer les preuves Network demandées par le sujet.
+### 2026-09-24 — Prompt 7
+**Prompt :** « Explique moi, sans donner exactement la réponse, de la manière à procéder pour traiter le 401 sur le login »
+**Résultat :** Explication méthodologique (sans code final) : repérer `catchError` sur l'Observable retourné par `next(request)`, utiliser `HttpErrorResponse` pour lire le statut, distinguer un 401 sur une route protégée (session expirée → déconnexion + redirection) d'un 401 sur `/auth/login` (identifiants invalides → déjà géré localement par le composant), relancer l'erreur avec `throwError` pour ne pas casser le `.subscribe({ error })` de l'appelant, et réutiliser le pattern `inject()` déjà présent dans le fichier. Aucun fichier modifié par l'agent — l'étudiant a écrit sa propre implémentation ensuite.
 
+### 2026-09-24 — Prompt 8
+**Prompt :** « Est-ce que ma solution proposée de semble cohérente ? Réalise des tests unitaires si besoin, et inscrit les également dans le rapport »
+**Résultat :** Relecture de l'implémentation de `auth.interceptor.ts` écrite par l'étudiant (gestion du 401 via `catchError`/`throwError`, exclusion de `/auth/login`, `authService.logout()` + `router.navigate(['/login'])`). Verdict : cohérent et fonctionnel, avec deux remarques mineures de style signalées (correspondance par sous-chaîne sur l'URL, `navigate` vs `navigateByUrl` utilisé ailleurs). Création du fichier de tests unitaires `frontend-starter/src/app/shared/interceptors/auth.interceptor.spec.ts` (Vitest + `TestBed.runInInjectionContext`, `AuthService`/`Router` mockés) couvrant : ajout du header `Authorization` si token présent, absence du header sinon, déconnexion + redirection sur un 401 d'une route protégée, absence de déconnexion sur un 401 de `/auth/login`, absence de déconnexion sur une erreur non-401. Exécution des tests via `npm test` : 5/5 passent.
+**Fichiers modifiés :** `frontend-starter/src/app/shared/interceptors/auth.interceptor.spec.ts` (créé) ; `frontend-starter/angular.json` (ajout d'une configuration `development` manquante sur la cible `build`, requise par le nouveau runner de tests Angular 22) ; `frontend-starter/package.json` (ajout de `jsdom` en devDependency, requis par Vitest pour simuler le DOM ; ajout du flag `--isolate=false` au script `test`, nécessaire car le pool de workers "forks" de Vitest échouait à démarrer sur cette machine — vraisemblablement à cause des espaces/accents dans le chemin du projet).
+**Preuve de fonctionnement :** sortie de `npm test` — `Test Files 1 passed (1)`, `Tests 5 passed (5)`.
 
+**Vérifications à réaliser par le binôme avant rendu :** relire chaque extrait de code proposé, l'appliquer soi-même, tester dans le navigateur (connexion, F5, expiration/altération du token, déconnexion) et capturer les preuves Network demandées par le sujet. Relire aussi le fichier de tests unitaires créé par l'agent pour être capable d'expliquer ce que chaque test vérifie et pourquoi.
 
-J'aimerai faire évoluer ma barre de navigation. Dans celle-ci, j'aimerai inclure une phrase pour saluer l'utilisateur connecté. Y a t-il une méthode qui permet de récupérer le nom de l'utilisateur ?
-
-Oui : AuthService expose déjà un Signal public pour ça, pas besoin d'appeler l'API à nouveau.
-
-
-// auth.service.ts, déjà présent
-readonly currentUser = signal<User | null>(null);
-Ce signal est automatiquement rempli par storeAuthentication() après un login()/register(), et par profile() après un chargement de profil. Il contient l'objet User ({ id, name, email, createdAt }), donc auth.currentUser()?.name te donne le nom réactivement, sans nouvel appel HTTP.
-
-Deux problèmes dans ce que tu as écrit dans app.ts/app.html :
-
-app.ts:13 — readonly user = this.auth.profile(); ne fait pas ce que tu crois. profile() renvoie un Observable (pas encore exécuté tant que personne ne s'y subscribe). Ici, user devient donc littéralement l'objet Observable lui-même, jamais la donnée utilisateur — et l'appel HTTP n'est même jamais déclenché puisque rien ne souscrit dessus.
-app.html:8 — {{ user. }} est incomplet et de toute façon user n'existe nulle part dans le template (ni variable locale @if...as user, ni propriété du composant correctement typée), d'où l'erreur de compilation attendue.
-Le pattern à utiliser (c'est exactement celui déjà présent dans profile-page.html:4, donc cohérent avec le reste du projet) :
-
-
-@if (auth.currentUser(); as user) {
-  <div class="user">
-    <span>Bonjour, {{ user.name }}</span>
-  </div>
-}
-Et dans app.ts, tu peux supprimer complètement la ligne readonly user = this.auth.profile(); — elle est inutile, auth (déjà injecté) suffit.
-
-Point à connaître pour l'oral : currentUser n'est pas persisté dans localStorage (seul le token l'est, via signal<User | null>(localStorage.getItem('gpc_token')) côté token... attention d'ailleurs, currentUser s'initialise toujours à null). Donc si l'utilisateur recharge la page (F5), le token survit mais currentUser() redevient null jusqu'à ce que /api/users/me soit rappelé quelque part. Résultat : juste après un F5, tu verrais le bouton "Déconnexion" (car token() est vrai) mais pas le message de bienvenue (car currentUser() est encore null), jusqu'à passer par /profile.
-
-Veux-tu que je corrige app.ts/app.html maintenant, ou tu préfères l'écrire toi-même ? Si tu veux que la salutation survive aussi au F5, il faudra en plus appeler auth.profile() automatiquement au démarrage de l'app quand un token existe déjà — dis-moi si tu veux que je t'explique ce point aussi ou qu'on le traite dans un second temps.
+### 2026-09-24 — Prompt 9
+**Prompt :** « Parfait, désormais il faudrait faire ce point là : Chargement du profil "lorsqu'il est demandé" — Comme tout à l'heure, explique moi sans donner la réponse de ce qu'il faut faire »
+**Résultat :** Explication méthodologique (sans code final) pour rendre le chargement de `/api/users/me` automatique sur `profile-page.ts` : identifier le hook de cycle de vie Angular adapté (exécuté une fois à la création du composant) et l'interface à implémenter, réutiliser la méthode `load()` déjà existante à l'intérieur de ce hook, décider du sort du bouton "Charger mon profil" (suppression ou reconversion en bouton de rafraîchissement) au regard du libellé exact du sujet, réfléchir à la redondance avec l'appel déjà fait au démarrage de l'app dans `AppComponent`, et anticiper la condition de course entre ce chargement initial (asynchrone) et l'affichage du formulaire si l'utilisateur navigue très vite vers `/profile`. Aucun fichier modifié par l'agent — implémentation laissée au binôme.
