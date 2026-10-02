@@ -15,6 +15,7 @@ export class TracksPageComponent {
   readonly page = signal(1);
   readonly pages = signal(1);
   readonly loading = signal(false);
+  readonly error = signal('');
   readonly audioUrl = signal('');
   readonly title = new FormControl('', { nonNullable: true });
   file?: File;
@@ -28,25 +29,36 @@ export class TracksPageComponent {
     console.debug('[TracksPage] Fichier sélectionné', this.file?.name);
   }
 
-  load(): void {
+load(requestedPage: number = this.page()): void {
+    // 1. On mémorise la page actuelle avant tout changement
+    const previousPage = this.page(); 
+    
+    // 2. Mise à jour "optimiste" de l'interface
+    this.page.set(requestedPage); 
+
+    this.error.set('');
     this.loading.set(true);
-    this.service.list(this.page()).subscribe({
+    
+    this.service.list(requestedPage).subscribe({
       next: (response) => {
         console.debug('[TracksPage] Pistes chargées', response.items.length);
         this.tracks.set(response.items);
         this.pages.set(response.pages);
         this.loading.set(false);
       },
-      error: (error) => {
-        console.error('[TracksPage] Chargement impossible', error);
+      error: (err: { error?: { message?: string } }) => {
+        console.error('[TracksPage] Chargement impossible', err);
+        this.error.set(err.error?.message ?? 'Impossible de charger la bibliothèque.');
+        
+        this.page.set(previousPage); 
+        
         this.loading.set(false);
       },
     });
   }
 
   go(page: number): void {
-    this.page.set(page);
-    this.load();
+    this.load(page);
   }
 
   upload(): void {
