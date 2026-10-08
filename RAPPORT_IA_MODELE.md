@@ -80,3 +80,44 @@ Pour chaque mission, détailler et fournir des explications concernant : objecti
 ### 2026-10-02 — Prompt 17
 **Prompt :** « J'ai appliqué des modifications. Cela te semble correct désormais ? »
 **Résultat :** Relecture de `tracks-page.ts` après refactor de `load(requestedPage)` avec mémorisation de `previousPage` et revert de `page` en cas d'échec. Vérification positive : la solution résout le point soulevé précédemment, et la suppression de `this.tracks.set([])` dans le callback d'erreur est jugée cohérente avec cette nouvelle logique (la page revient à l'ancienne valeur, donc la liste déjà affichée reste correcte). Deux remarques mineures signalées : redondance de `this.page.set(1)` avant `this.load()` dans `upload()` (le paramètre de `load()` suffit désormais), et une indentation incohérente ligne 32. `npm run build` exécuté avec succès. Aucun fichier modifié par l'agent — Mission 2 jugée complète.
+
+### 2026-10-02 — Prompt 18
+**Prompt :** « On enchaîne sur la mission 3. Comme d'habitude, explique moi ce qu'il y a à faire »
+**Résultat :** Explication méthodologique complète (sans code) découpée en 6 volets : (A) compréhension du flux upload/lecture déjà fourni par le starter et pourquoi une URL directe en `src` n'aurait pas l'en-tête JWT, (B) validation du fichier avant l'appel HTTP (type/taille, miroir des contraintes backend), (C) états d'interface pendant l'upload (chargement, anti double-soumission, erreur serveur, message de succès), (D) présentation en cards (format, date, correction de l'unité de taille actuellement erronée), (E) complément de la lecture (piste active, erreurs audio, révocation de l'`ObjectURL` via `OnDestroy`), (F) rappel des 5 questions mémoire/buffering/streaming à documenter par écrit. Aucun fichier modifié par l'agent.
+
+### 2026-10-02 — Prompt 19
+**Prompt :** « On commence par le B. Qu'est-ce que je dois faire concrètement ? Sans me donner la réponse »
+**Résultat :** Déroulé concret en 7 étapes (sans code) pour la validation frontend du fichier audio : centraliser les règles (type MIME autorisés + taille max, en miroir du backend), valider dans `choose()`, décider du comportement si invalide (ne pas stocker le fichier, vider l'`<input>`, afficher un message), nettoyer l'erreur quand un fichier valide est choisi, revoir la condition de désactivation du bouton, garder une revalidation défensive dans `upload()`, et tester 3 cas concrets (fichier renommé, fichier trop lourd, fichier valide). Aucun fichier modifié par l'agent.
+
+### 2026-10-08 — Prompt 20
+**Prompt :** « On en est où ? »
+**Résultat :** Relecture de `tracks-page.ts/html` après implémentation de la validation par l'étudiant (constantes `MAX_FILE_SIZE`/`ALLOWED_MIME_TYPES`, Signal `uploadError` dédié, validation dans `choose()` et revalidation défensive dans `upload()` — jugées correctes et conformes à la méthode proposée). **Bug bloquant détecté** : `tracks-page.html` contenait une balise `<article class="card">` dupliquée par erreur (lignes 9-10), décalant la fermeture des balises jusqu'au `</div>` de la grille — confirmé par `npm run build` qui échouait avec `NG5002: Unexpected closing tag "div"`. Correction signalée à l'étudiant (sans l'appliquer soi-même) pour qu'il la corrige. Aucun fichier modifié par l'agent.
+
+### 2026-10-08 — Prompt 21
+**Prompt :** « C'est patché, on passe à quoi ? »
+**Résultat :** Vérification du correctif : `npm run build` relancé, compilation réussie. Point B (validation du fichier) de la Mission 3 confirmé opérationnel.
+
+### 2026-10-08 — Prompt 22
+**Prompt :** « Regarde mon implémentation, confirme que j'ai bien répondu à ce qui est attendu, et donne moi la suite »
+**Résultat :** Relecture de `tracks-page.ts/html/css` pour le point C (états d'interface pendant l'upload). Vérification positive : Signal `isUploading` distinct de `loading`, remis à `false` dans les deux branches `next`/`error`, bouton protégé par une condition combinée et une garde défensive dans `upload()`, Signal `uploadSuccess` avec disparition automatique via `setTimeout` (en nettoyant tout timer précédent), et anticipation du point E en implémentant déjà `OnDestroy`/`ngOnDestroy()` pour annuler ce timer à la destruction du composant. `npm run build` exécuté avec succès. Un commentaire résiduel signalé à nettoyer (ligne 112, « Les méthodes que tu avais perdues sont bien là »). Explication méthodologique donnée ensuite pour le point D (présentation en cards : grille responsive, ajout du format/date, correction de l'unité de taille). Aucun fichier modifié par l'agent.
+
+### 2026-10-08 — Prompt 23
+**Prompt :** « Analyse mon implémentation et confirme moi si c'est bon »
+**Résultat :** Relecture de `tracks-page.ts/html/css` et du nouveau fichier `shared/pipes/file-zize.pipe.ts` pour le point D. Vérification positive : grille `.tracks-grid` responsive (`repeat(auto-fill, minmax(280px, 1fr))`), cartes `.track-card` réutilisant `.card`, ajout du format via une méthode `formatMimeType()` et de la date via le `DatePipe` natif d'Angular, correction de l'unité de taille via un pipe personnalisé `FileSizePipe` (conversion octets → o/Ko/Mo/Go, logique vérifiée correcte), bonne hiérarchie sémantique des titres (`h1` > `h2` > `h3` par piste). `npm run build` exécuté avec succès. Points mineurs signalés : faute de frappe dans le nom de fichier du pipe (`file-zize` au lieu de `file-size`), commentaire résiduel toujours présent (ligne 115), indentation incohérente de la seconde balise `<article>`, et question ouverte sur l'usage de `<article>`/liste sémantique plutôt que `<div>` pour chaque piste (accessibilité). Aucun fichier modifié par l'agent.
+
+### 2026-10-08 — Prompt 24
+**Prompt :** « On passe au point E »
+**Résultat :** Explication méthodologique (sans code) pour le dernier point de la Mission 3 : mémoriser l'id de la piste en cours de lecture pour l'indiquer visuellement, distinguer les deux sources d'erreur audio (échec HTTP vs échec natif de décodage de la balise `<audio>`, via l'événement `error`), et étendre `ngOnDestroy()` (déjà présent pour le timer de succès) pour révoquer la dernière `ObjectURL`. Aucun fichier modifié par l'agent.
+
+### 2026-10-08 — Prompt 25
+**Prompt :** « Mon import est en erreur, tu peux le fix ? »
+**Résultat :** Diagnostic : l'étudiant avait corrigé l'import vers `file-size.pipe` sans renommer le fichier physique, resté `file-zize.pipe.ts`. Correction appliquée par l'agent : création de `shared/pipes/file-size.pipe.ts` avec le contenu identique, suppression de l'ancien fichier `file-zize.pipe.ts`. `npm run build` relancé avec succès. Signalé à l'étudiant que la logique TypeScript du point E (`playingTrackId`, `playbackError`, `onAudioError`, `cleanupAudioUrl`) était déjà écrite mais pas encore câblée dans `tracks-page.html` (aucun `@if`/`[class]`/`(error)` ne les utilisait).
+**Fichiers modifiés :** `frontend-starter/src/app/shared/pipes/file-size.pipe.ts` (créé) ; `frontend-starter/src/app/shared/pipes/file-zize.pipe.ts` (supprimé).
+
+### 2026-10-08 — Prompt 26
+**Prompt :** « Est-ce que mon implémentation te semble bonne ? »
+**Résultat :** Relecture de `tracks-page.html/css` après câblage du point E : `[class.active]` sur chaque card comparant `playingTrackId()` à `track.id`, bascule d'icône ▶/🔊, affichage de `playbackError()`, écouteur `(error)="onAudioError($event)"` sur `<audio>`, styles `.track-card.active` associés. Vérification positive, `npm run build` exécuté avec succès. Point mineur d'accessibilité signalé : l'`aria-label` du bouton de lecture reste statique ("Lire ...") même quand la piste est active, sans refléter l'état en cours. Mission 3 jugée complète côté code (points A à E). Aucun fichier modifié par l'agent.
+
+### 2026-10-08 — Prompt 27
+**Prompt :** « On est bon pour passer au TD3 ? (Sans prendre en compte les questions) »
+**Résultat :** Lecture de `SUJET_ETUDIANT_TP3.md` pour vérifier les prérequis (TP1/TP2 fonctionnels : connexion, profil, pagination, upload, lecture audio). Exécution de `npm run build` (succès) et `npm test` (5/5 toujours au vert). Vérification `git status` : le travail de la Mission 3 (CSS/HTML/TS de `tracks-page` + nouveau dossier `shared/pipes/`) n'est pas encore commité. Conclusion : prêt pour démarrer le TP3 sur le plan du code, en excluant les questions de réflexion comme demandé ; rappel que les livrables non-code de TP1/TP2 restent en attente et qu'un commit du travail en cours est recommandé avant d'enchaîner. Aucun fichier modifié par l'agent.

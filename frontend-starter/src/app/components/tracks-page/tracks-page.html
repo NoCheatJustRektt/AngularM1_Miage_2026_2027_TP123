@@ -10,7 +10,20 @@
       <h2>Importer</h2>
       <label>Titre<input [formControl]="title" /></label>
       <label>Fichier audio<input type="file" accept="audio/*" (change)="choose($event)" /></label>
-      <button type="button" (click)="upload()" [disabled]="!file">Envoyer</button>
+      
+      @if (uploadError()) {
+        <p class="error">{{ uploadError() }}</p>
+      }
+
+      @if (uploadSuccess()) {
+        <p class="success">{{ uploadSuccess() }}</p>
+      }
+
+      @if (isUploading()) {
+        <p class="loading-text">Envoi en cours…</p>
+      }
+
+      <button type="button" (click)="upload()" [disabled]="!file || isUploading()">Envoyer</button>
     </article>
 
     <article class="card">
@@ -24,31 +37,62 @@
       }
 
       @if (loading()) {
-        <p>Chargement…</p>
+        <p class="loading-text">Chargement…</p>
       }
 
-      @for (track of tracks(); track track.id) {
-        <div class="track">
-          <div>
-            <b>{{ track.title }}</b>
-            <small>{{ track.originalName }} · {{ track.size }} Ko</small>
+      <div class="tracks-grid">
+        @for (track of tracks(); track track.id) {
+          <div class="card track-card" [class.active]="playingTrackId() === track.id">
+            
+            <div class="track-header">
+              <h3 class="track-title" [title]="track.title">{{ track.title }}</h3>
+              
+              <button class="play-btn" type="button" (click)="play(track)" [attr.aria-label]="'Lire ' + track.title">
+                <!-- Changement d'icône pour la piste active -->
+                @if (playingTrackId() === track.id) {
+                  🔊
+                } @else {
+                  ▶
+                }
+              </button>
+            </div>
+            
+            <div class="track-details">
+              <small class="track-filename" [title]="track.originalName">{{ track.originalName }}</small>
+              
+              <div class="track-meta">
+                <!-- Utilisation de la méthode pour le type MIME -->
+                <span class="badge">{{ formatMimeType(track.mimeType) }}</span>
+                <!-- Utilisation du Pipe personnalisé pour la taille -->
+                <span>{{ track.size | fileSize }}</span>
+                <!-- Utilisation du Pipe Angular natif pour la date -->
+                <span>{{ track.createdAt | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+            
           </div>
-          <button type="button" (click)="play(track)" [attr.aria-label]="'Lire ' + track.title">▶</button>
-        </div>
-      } @empty {
-        @if (!loading() && !error()) {
-          <p>Aucune piste.</p>
+        } @empty {
+          @if (!loading() && !error()) {
+            <p>Aucune piste.</p>
+          }
         }
-      }
+      </div>
 
+      <!-- Pagination -->
       <div class="pager">
         <button type="button" (click)="go(page() - 1)" [disabled]="page() === 1">Préc.</button>
         <span>Page {{ page() }} / {{ pages() }}</span>
         <button type="button" (click)="go(page() + 1)" [disabled]="page() === pages()">Suiv.</button>
       </div>
 
+      <!-- Erreur de lecture (HTTP ou décodage natif) -->
+      @if (playbackError()) {
+        <p class="error">{{ playbackError() }}</p>
+      }
+
+      <!-- Lecteur Audio -->
       @if (audioUrl()) {
-        <audio [src]="audioUrl()" controls autoplay></audio>
+        <audio class="audio-player" [src]="audioUrl()" controls autoplay (error)="onAudioError($event)"></audio>
       }
     </article>
   </div>
