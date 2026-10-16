@@ -121,3 +121,17 @@ Pour chaque mission, détailler et fournir des explications concernant : objecti
 ### 2026-10-08 — Prompt 27
 **Prompt :** « On est bon pour passer au TD3 ? (Sans prendre en compte les questions) »
 **Résultat :** Lecture de `SUJET_ETUDIANT_TP3.md` pour vérifier les prérequis (TP1/TP2 fonctionnels : connexion, profil, pagination, upload, lecture audio). Exécution de `npm run build` (succès) et `npm test` (5/5 toujours au vert). Vérification `git status` : le travail de la Mission 3 (CSS/HTML/TS de `tracks-page` + nouveau dossier `shared/pipes/`) n'est pas encore commité. Conclusion : prêt pour démarrer le TP3 sur le plan du code, en excluant les questions de réflexion comme demandé ; rappel que les livrables non-code de TP1/TP2 restent en attente et qu'un commit du travail en cours est recommandé avant d'enchaîner. Aucun fichier modifié par l'agent.
+
+### 2026-10-08 — Prompt 28
+**Prompt :** « Met tout sur git »
+**Résultat :** Staging et commit local (sans push) des changements de la Mission 3 : `RAPPORT_IA_MODELE.md`, `tracks-page.css/.html/.ts`, nouveau `shared/pipes/file-size.pipe.ts`. Message de commit `TD2 Mission 3`. Une erreur de syntaxe de l'agent a laissé un résidu « EOF » dans le message du premier commit — corrigée immédiatement via `git commit --amend`.
+**Fichiers modifiés :** commit Git uniquement, pas de nouveau changement de code.
+
+### 2026-10-08 — Prompt 29
+**Prompt :** « VSCode détecte une erreur dans tsconfig.app.json, tu peux patch ? »
+**Résultat :** Diagnostic via l'outil de diagnostics VSCode : TypeScript 6 (`~6.0.0` dans `package.json`) exige désormais un `rootDir` explicite quand `outDir` est défini, faute de quoi il ne peut pas déduire la disposition des fichiers de sortie. Correction : ajout de `"rootDir": "./src"` dans `tsconfig.app.json`, cohérent avec `"include": ["src/**/*.ts"]`. Diagnostic VSCode revérifié (vide) et `npm run build` relancé avec succès.
+**Fichiers modifiés :** `frontend-starter/tsconfig.app.json`.
+
+### 2026-10-08 — Prompt 30
+**Prompt :** « On passe au TD3, on doit implémenter quoi ? »
+**Résultat :** Lecture de `SUJET_ETUDIANT_TP3.md`, `track.service.ts`, `package.json` (absence d'`@angular/material`), `backend/test/api.test.js` et recherche des fichiers `*.spec.ts` existants (seul `auth.interceptor.spec.ts`). Audit détaillé des trois missions : Mission 5 (suppression — tout reste à construire : `TrackService.delete()`, bouton par card, confirmation, état de suppression par id, `MatSnackBar` nécessitant l'installation d'Angular Material, rafraîchissement de liste, gestion du 404 piste déjà supprimée/pas propriétaire), Mission 6 (progression d'upload — passer `TrackService.upload()` en mode événements HTTP avec pourcentage, désactiver tous les contrôles du formulaire pendant l'envoi, pas seulement le bouton), Mission 7 (tests — un test sur 7 déjà couvert par l'intercepteur existant, il en faut au moins 2 de plus, nécessitant d'introduire l'outillage de test HTTP d'Angular non encore utilisé dans ce projet). Rappel des livrables finaux (captures Network, rapport de tests, build). Aucun fichier modifié par l'agent.
